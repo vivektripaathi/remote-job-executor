@@ -21,17 +21,17 @@ class JobContainer(containers.DeclarativeContainer):
         instance_of=SSHClientInterface,
         default=SSHClient(),
     )
-    
     remote_executor = providers.Dependency(
         instance_of=RemoteCommandExecutorInterface,
         default=RemoteCommandExecutor(),
     )
-    
+
+    # db repository
     db_repo = providers.Dependency(
         instance_of=JobAbstractRepository,
         default=JobDbRepository(),
     )
-    
+
     # Use cases
     create_job_use_case = providers.Factory(CreateJobUseCase)
     get_job_use_case = providers.Factory(GetJobUseCase)
