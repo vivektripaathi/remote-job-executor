@@ -9,6 +9,7 @@ class JobsConfig(AppConfig):
     def ready(self):
         from jobs.inject import JobContainer
         import jobs.presentation.views
+        import jobs.tasks
         from jobs.domain.use_cases import (
             create_job_use_case,
             get_job_use_case,
@@ -25,6 +26,7 @@ class JobsConfig(AppConfig):
         self.inject_container.wire(
             modules=[
                 jobs.presentation.views,
+                jobs.tasks,
                 create_job_use_case,
                 get_job_use_case,
                 list_jobs_use_case,
