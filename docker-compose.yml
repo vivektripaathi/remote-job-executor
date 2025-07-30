@@ -1,0 +1,108 @@
+version: '3.8'
+
+services:
+  server:
+    restart: always
+    build:
+      context: ./backend
+      args:
+        PYTHON_BASE_IMAGE: ${PYTHON_BASE_IMAGE:-python:3.9-slim}
+    ports:
+      - "8000:8000"
+    env_file: ./backend/.env.development
+    user: runner
+    working_dir: /app
+    command: >
+      sh -c "python manage.py migrate &&
+              daphne -b 0.0.0.0 -p 8000 backend.asgi:application"
+    depends_on:
+      - migration
+      - celery_worker
+      - redis
+      - db
+    networks:
+      - remote-job-network
+    volumes:
+      - static_volume:/app/static
+      - media_volume:/app/media
+      - ./ssh-key.pem:/Users/vivektripathi/Developer/remote-job-executor/ssh-key.pem:ro
+
+  migration:
+    build:
+      context: ./backend
+      args:
+        PYTHON_BASE_IMAGE: ${PYTHON_BASE_IMAGE:-python:3.9-slim}
+    env_file: ./backend/.env.development
+    working_dir: /app
+    command: python manage.py migrate
+    depends_on:
+      - db
+    networks:
+      - remote-job-network
+
+  celery_worker:
+    restart: always
+    build:
+      context: ./backend
+      args:
+        PYTHON_BASE_IMAGE: ${PYTHON_BASE_IMAGE:-python:3.9-slim}
+    env_file: ./backend/.env.development
+    working_dir: /app
+    command: celery -A backend worker --loglevel=info --concurrency=2
+    depends_on:
+      - redis
+      - migration
+    networks:
+      - remote-job-network
+    volumes:
+      - ./backend:/app
+      - ./ssh-key.pem:/Users/vivektripathi/Developer/remote-job-executor/ssh-key.pem:ro
+
+  redis:
+    restart: unless-stopped
+    image: redis:${REDIS_VERSION:-7-alpine}
+    ports:
+      - "6380:6379"
+    networks:
+      - remote-job-network
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  db:
+    restart: unless-stopped
+    image: postgres:${POSTGRES_VERSION:-15-alpine}
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-remote_jobs_dev}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "5433:5432"
+    networks:
+      - remote-job-network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-remote_jobs_dev}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+    name: remote_job_postgres_data
+  redis_data:
+    name: remote_job_redis_data
+  static_volume:
+    name: remote_job_static
+  media_volume:
+    name: remote_job_media
+
+networks:
+  remote-job-network:
+    name: remote-job-network
+    driver: bridge
