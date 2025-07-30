@@ -44,6 +44,9 @@ class Job(models.Model):
     modified_at = models.DateTimeField(default=timezone.now)
     started_at = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
+    task_id = models.CharField(max_length=255, null=True, blank=True)
+    remote_process_id = models.CharField(max_length=255, null=True, blank=True)
+
 
     class Meta:
         db_table = "jobs"
