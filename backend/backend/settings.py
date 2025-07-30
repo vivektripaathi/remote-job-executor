@@ -225,17 +225,11 @@ logging.config.dictConfig(
                 "class": "logging.StreamHandler",
                 "formatter": "json" if not DEBUG else "default",
             },
-            "file": {
-                "class": "logging.FileHandler",
-                "filename": "logs/django.log",
-                "formatter": "json" if not DEBUG else "default",
-            },
             "django.server": DEFAULT_LOGGING["handlers"]["django.server"],
         },
         "loggers": {
             # default for all undefined Python modules
-            "": {"level": LOGLEVEL, "handlers": ["console", "file"]},
-            "jobs": {"level": LOGLEVEL, "handlers": ["console", "file"], "propagate": False},
+            "": {"level": LOGLEVEL, "handlers": ["console"]}
         },
     }
 )
