@@ -23,10 +23,12 @@ class Config:
 
 def validate_job_id(job_id: str) -> bool:
     """Validate job ID format (UUID)."""
+    if job_id is None:
+        return False
     try:
         uuid.UUID(job_id)
         return True
-    except ValueError:
+    except (ValueError, TypeError):
         return False
 
 
