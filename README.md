@@ -6,15 +6,23 @@ A production-ready asynchronous remote job execution system built with Django, C
 
 ```bash
 # Clone and setup
-git clone <repository-url>
+git clone https://github.com/vivektripaathi/remote-job-executor
 cd remote-job-executor
 
 # Build and start services
 docker-compose up -d --build
 
 # Install CLI dependencies and test
-cd cli && pip3 install -r requirements.txt
-python3 main.py submit "date" --stream
+cd cli
+python -m venv venv
+
+#  If you're on Mac/Linux:
+source venv/bin/activate
+# If you're on Windows (PowerShell or CMD):
+.\venv\Scripts\activate
+
+pip install -r requirements.txt
+python main.py submit "date" --stream
 ```
 
 
