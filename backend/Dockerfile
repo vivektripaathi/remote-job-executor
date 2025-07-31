@@ -45,12 +45,15 @@ FROM ${PYTHON_BASE_IMAGE} AS runner
 COPY --from=builder /opt/env /opt/env
 COPY --from=builder /app /app
 
-# Install runtime dependencies only
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        postgresql-client \
-        libpq5 \
-        curl \
+# Install runtime dependencies only with retry logic and better error handling
+RUN for i in 1 2 3; do \
+        apt-get update && \
+        apt-get install -y --no-install-recommends \
+            postgresql-client \
+            libpq5 \
+            curl \
+        && break || sleep 5; \
+    done \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
