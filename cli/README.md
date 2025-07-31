@@ -49,6 +49,123 @@ pip3 install -r requirements.txt
 
 ### 3. Configure Environment (Optional)
 
+## 🧪 Testing
+
+The CLI includes comprehensive test suites to validate functionality, race conditions, and system reliability.
+
+### Test Categories
+
+- **Unit Tests**: Individual function validation
+- **Integration Tests**: API and WebSocket integration
+- **Race Condition Tests**: Concurrent operation validation
+- **Performance Tests**: High-load stress testing
+- **System Tests**: End-to-end workflow validation
+
+### Quick Testing
+
+Install test dependencies and run all tests:
+
+```bash
+# Install test dependencies
+pip3 install -r test-requirements.txt
+
+# Run all tests
+python3 run_tests.py all
+
+# Run only race condition tests
+python3 run_tests.py race
+
+# Run quick tests (excluding slow tests)
+python3 run_tests.py quick
+```
+
+### Detailed Test Options
+
+```bash
+# Install dependencies and run tests
+python3 run_tests.py all --install-deps
+
+# Run tests in parallel
+python3 run_tests.py all --parallel
+
+# Run specific test by name
+python3 run_tests.py --specific test_concurrent_submissions
+
+# Run performance/load tests
+python3 run_tests.py performance
+
+# Generate detailed coverage report
+python3 run_tests.py --coverage-report
+```
+
+### Test Types Available
+
+| Command | Description |
+|---------|-------------|
+| `all` | Run complete test suite |
+| `race` | Race condition and concurrency tests |
+| `unit` | Unit tests for individual functions |  
+| `integration` | API and WebSocket integration tests |
+| `quick` | Fast tests only (exclude slow tests) |
+| `concurrent` | Concurrent operation tests |
+| `performance` | High-load and stress tests |
+
+### Test Coverage
+
+The test suite covers:
+
+- **Job Submission**: Command validation, priorities, timeouts
+- **Job Management**: Status tracking, cancellation, error handling
+- **Real-time Streaming**: WebSocket connections, log streaming
+- **Concurrency**: Race conditions, parallel operations
+- **Error Handling**: Network failures, invalid inputs, edge cases
+- **Data Validation**: Input sanitization, UUID validation
+- **System Integration**: End-to-end workflows
+
+### Race Condition Testing
+
+Special focus on concurrent scenarios:
+
+```bash
+# Test rapid job submissions
+pytest -v -k "rapid_fire"
+
+# Test concurrent status checks
+pytest -v -k "concurrent_status" 
+
+# Test streaming race conditions
+pytest -v -k "concurrent_streaming"
+
+# Test mixed operations
+pytest -v -k "mixed_operations"
+```
+
+### Continuous Testing
+
+Run tests during development:
+
+```bash
+# Watch mode (requires pytest-watch)
+pip3 install pytest-watch
+ptw -- --tb=short
+
+# Quick validation during development
+python3 run_tests.py quick --no-coverage
+```
+
+### Test Reports
+
+```bash
+# Generate HTML coverage report
+python3 run_tests.py --coverage-report
+open htmlcov/index.html
+
+# Run with detailed output
+pytest -v --tb=long test_cli.py test_race_conditions.py
+```
+
+### 4. Configure Environment (Optional)
+
 The CLI uses default endpoints that work with Docker setup:
 
 ```bash
