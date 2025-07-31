@@ -5,17 +5,18 @@ A production-ready asynchronous remote job execution system built with Django, C
 ## 🐳 Quick Docker Setup
 
 ```bash
-# Clone and start
+# Clone and setup
 git clone <repository-url>
 cd remote-job-executor
-docker-compose up -d
+
+# Build and start services
+docker-compose up -d --build
 
 # Install CLI dependencies and test
 cd cli && pip3 install -r requirements.txt
 python3 main.py submit "date" --stream
 ```
 
-**→ WebSocket streaming ready in under 2 minutes!**
 
 ## 🚀 Features
 
@@ -99,7 +100,10 @@ EC2_KEY_PATH=/Users/vivektripathi/Developer/remote-job-executor/ssh-key.pem
 **Start all services:**
 
 ```bash
-# Build and start all containers
+# Build and start all containers (first time or after changes)
+docker-compose up -d --build
+
+# Or start without rebuilding (if no changes)
 docker-compose up -d
 
 # Check container status
@@ -247,10 +251,10 @@ cd cli
 python3 main.py submit "find /home -name '*.log'" --stream --timeout 120
 
 # Submit and wait for completion
-python3 main.py submit "backup-script.sh" --wait --timeout 3600
+# python3 main.py submit "backup-script.sh" --wait --timeout 3600
 
 # Follow job status updates
-python3 main.py view <job-id> --follow
+# python3 main.py view <job-id> --follow
 
 # Test with Docker environment
 python3 main.py submit "echo 'Docker WebSocket test'" --stream
@@ -335,9 +339,13 @@ docker-compose logs -f
 # Restart services
 docker-compose restart
 
-# Clean rebuild
+# Clean rebuild (removes containers and rebuilds)
 docker-compose down
 docker-compose up -d --build
+
+# Force rebuild with no cache
+docker-compose build --no-cache
+docker-compose up -d
 ```
 
 ### Common Issues

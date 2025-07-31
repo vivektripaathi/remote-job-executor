@@ -180,35 +180,6 @@ CSRF_COOKIE_SECURE=True
 - **Celery integration** with Redis backend
 - **Django Channels** for WebSocket support
 
-## 🗄️ Database Schema
-
-### Job Model
-
-```python
-class Job(models.Model):
-    id = UUIDField(primary_key=True)           # Unique job identifier
-    command = TextField()                       # Shell command to execute
-    timeout = IntegerField(default=60)          # Execution timeout (seconds)
-    priority = CharField(choices=Priority)      # Low/Medium/High
-    status = CharField(choices=Status)          # Queued/Running/Success/Failed/Cancelled
-    parameters = JSONField(null=True)           # Additional job parameters
-    stdout = TextField(null=True)               # Command output
-    stderr = TextField(null=True)               # Command errors
-    created_at = DateTimeField(auto_now_add=True)
-    modified_at = DateTimeField(auto_now=True)
-    started_at = DateTimeField(null=True)       # Execution start time
-    completed_at = DateTimeField(null=True)     # Execution end time
-    task_id = CharField(null=True)              # Celery task ID
-    remote_process_id = CharField(null=True)    # Remote process ID
-```
-
-**Indexes:**
-
-- Primary key on `id` (UUID)
-- Index on `status` for filtering
-- Index on `created_at` for sorting
-- Index on `priority` for queue processing
-
 ## 🔌 API Endpoints
 
 ### Job Management Endpoints
