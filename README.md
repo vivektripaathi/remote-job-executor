@@ -2,30 +2,6 @@
 
 A production-ready asynchronous remote job execution system built with Django, Celery, and Django Channels. Execute shell commands remotely with real-time log streaming, job prioritization, and comprehensive management capabilities.
 
-## 🐳 Quick Docker Setup
-
-```bash
-# Clone and setup
-git clone https://github.com/vivektripaathi/remote-job-executor
-cd remote-job-executor
-
-# Build and start services
-docker-compose up -d --build
-
-# Install CLI dependencies and test
-cd cli
-python -m venv venv
-
-#  If you're on Mac/Linux:
-source venv/bin/activate
-# If you're on Windows (PowerShell or CMD):
-.\venv\Scripts\activate
-
-pip install -r requirements.txt
-python main.py submit "date" --stream
-```
-
-
 ## 🚀 Features
 
 - **Asynchronous Job Execution**: Execute shell commands remotely using Celery for background processing
@@ -67,6 +43,11 @@ python main.py submit "date" --stream
 - **Dependency Injection**: Using dependency-injector library
 - **CLI**: Click-based command-line interface
 
+## Documentation
+
+- **[CLI Documentation](./cli/README.md)** - Complete CLI usage guide with examples and advanced features
+- **[Backend Documentation](./backend/README.md)** - Backend architecture, API reference, and development guide
+
 ## 📋 Prerequisites
 
 - Python 3.9+
@@ -79,7 +60,7 @@ python main.py submit "date" --stream
 ### 1. Clone Repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/vivektripaathi/remote-job-executor
 cd remote-job-executor
 ```
 
@@ -89,9 +70,9 @@ cd remote-job-executor
 - **Python 3.9+** for CLI usage
 - SSH key for remote server access (if executing on remote servers)
 
-### 3. Configure SSH Key (Optional)
+### 3. SSH Configuration
 
-If you want to execute jobs on remote servers, ensure your SSH key is in the project root:
+Ensure your SSH key is in the project root:
 
 ```bash
 # Your SSH private key should be at:
@@ -100,7 +81,7 @@ If you want to execute jobs on remote servers, ensure your SSH key is in the pro
 # Update backend/.env.development with your server details:
 EC2_HOST=your-server-ip
 EC2_USERNAME=your-username
-EC2_KEY_PATH=/Users/vivektripathi/Developer/remote-job-executor/ssh-key.pem
+EC2_KEY_PATH=ssh-key.pem
 ```
 
 ### 4. Start with Docker
@@ -109,7 +90,7 @@ EC2_KEY_PATH=/Users/vivektripathi/Developer/remote-job-executor/ssh-key.pem
 
 ```bash
 # Build and start all containers (first time or after changes)
-docker-compose up -d --build
+docker-compose build
 
 # Or start without rebuilding (if no changes)
 docker-compose up -d
@@ -132,7 +113,14 @@ docker-compose logs -f server
 ### 5. Install CLI Dependencies
 
 ```bash
+# Install CLI dependencies and test
 cd cli
+python -m venv venv
+
+#  If you're on Mac/Linux:
+source venv/bin/activate
+# If you're on Windows (PowerShell or CMD):
+.\venv\Scripts\activate
 pip3 install -r requirements.txt
 ```
 
@@ -157,74 +145,6 @@ python3 main.py view <job-id>
 docker-compose down
 ```
 
-## 📁 Project Structure
-
-```text
-
-remote-job-executor/
-├── README.md                   # This file
-├── backend/                    # Django backend application
-│   ├── README.md              # Backend-specific documentation
-│   ├── backend/               # Django project settings
-│   ├── jobs/                  # Main application
-│   │   ├── domain/            # Domain layer (business logic)
-│   │   ├── data/              # Data layer (repositories)
-│   │   ├── infrastructure/    # Infrastructure layer (SSH, external services)
-│   │   ├── presentation/      # Presentation layer (API views)
-│   │   ├── models.py          # Django models
-│   │   ├── tasks.py           # Celery tasks
-│   │   └── consumers.py       # WebSocket consumers
-│   ├── requirements.txt       # Python dependencies
-│   └── manage.py              # Django management script
-├── cli/                       # Command-line interface
-│   ├── README.md              # CLI-specific documentation
-│   ├── main.py                # CLI entry point
-│   ├── utils.py               # Utility functions
-│   ├── .env.example           # CLI environment template
-│   └── .env                   # CLI environment configuration
-└── venv/                      # Virtual environment (gitignored)
-```
-
-## 🔧 Configuration
-
-### Backend Configuration (.env)
-
-```bash
-# Core Django Settings
-SECRET_KEY=your-secret-key-here
-DEBUG=False
-ALLOWED_HOSTS=localhost,127.0.0.1,your-domain.com
-
-# Database
-DATABASE_URL=psql://user:password@localhost:5432/remote_jobs
-
-# Redis/Celery
-REDIS_URL=redis://127.0.0.1:6379/0
-
-# Security
-SECURE_SSL_REDIRECT=True
-SESSION_COOKIE_SECURE=True
-CSRF_COOKIE_SECURE=True
-```
-
-### CLI Configuration (.env)
-
-```bash
-# API Endpoints
-REMOTE_JOB_API_URL=http://localhost:8000/jobs
-REMOTE_JOB_WS_URL=ws://localhost:8000/ws/jobs
-```
-
-## 🎯 API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/jobs/` | Create new job |
-| GET | `/jobs/list/` | List jobs with filtering |
-| GET | `/jobs/{id}/` | Get job details |
-| POST | `/jobs/{id}/cancel/` | Cancel job |
-| WS | `/ws/jobs/{id}/` | Real-time log streaming |
-
 ## 🖥️ CLI Usage
 
 > **Prerequisites**: Ensure Docker containers are running (`docker-compose up -d`) and CLI dependencies are installed (`pip3 install -r cli/requirements.txt`)
@@ -248,24 +168,6 @@ python3 main.py stream <job-id>
 
 # Cancel a running job
 python3 main.py cancel <job-id> --force
-```
-
-### Advanced Usage
-
-```bash
-cd cli
-
-# Submit with streaming and custom timeout
-python3 main.py submit "find /home -name '*.log'" --stream --timeout 120
-
-# Submit and wait for completion
-# python3 main.py submit "backup-script.sh" --wait --timeout 3600
-
-# Follow job status updates
-# python3 main.py view <job-id> --follow
-
-# Test with Docker environment
-python3 main.py submit "echo 'Docker WebSocket test'" --stream
 ```
 
 ### Common Issues
