@@ -23,7 +23,7 @@ services:
     volumes:
       - static_volume:/app/static
       - media_volume:/app/media
-      - ./ssh-key.pem:/Users/vivektripathi/Developer/remote-job-executor/ssh-key.pem:ro
+      - ./ssh-key.pem:/app/ssh-key.pem:ro
 
   migration:
     build:
@@ -54,7 +54,7 @@ services:
       - remote-job-network
     volumes:
       - ./backend:/app
-      - ./ssh-key.pem:/Users/vivektripathi/Developer/remote-job-executor/ssh-key.pem:ro
+      - ./ssh-key.pem:/app/ssh-key.pem:ro
 
   redis:
     restart: unless-stopped
