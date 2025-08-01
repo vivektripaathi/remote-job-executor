@@ -130,6 +130,13 @@ backend/
 
 ### Environment Files
 
+> **Note**: The docker-compose configuration uses the main `.env` file. The `.env.development` and `.env.production` files are templates for different deployment scenarios.
+
+**Main Configuration (.env):**
+
+- Used by docker-compose
+- Contains active configuration settings
+
 **Development (.env.development):**
 
 ```bash
@@ -292,7 +299,27 @@ CSRF_COOKIE_SECURE=True
 
 ## 🧪 Development Setup
 
-### 1. Docker Setup (Recommended)
+### 1. Environment Configuration
+
+First, set up your environment file:
+
+```bash
+# Copy the development template to create your active .env file
+cp .env.development .env
+
+# Edit the .env file with your actual configuration
+# Required updates:
+# - EC2_HOST=your-server-ip              # IP address of your remote server
+# - EC2_USERNAME=your-username           # SSH username (e.g., ubuntu, ec2-user)  
+# - SECRET_KEY=your-secret-key-here      # Generate a strong Django secret key
+# Note: EC2_KEY_PATH=/app/ssh-key.pem is already correctly set for Docker
+
+# Example:
+# EC2_HOST=192.168.1.100
+# EC2_USERNAME=ubuntu
+```
+
+### 2. Docker Setup (Recommended)
 
 ```bash
 # From project root
@@ -314,16 +341,17 @@ docker-compose logs -f celery_worker
 - **Celery Worker**: Background processing
 - **WebSocket**: `ws://localhost:8000/ws/jobs/{job_id}/`
 
-### 2. SSH Configuration 
+### 3. SSH Configuration
 
-For remote job execution, configure your SSH key:
+For remote job execution, ensure your SSH key is configured:
 
 ```bash
 # Ensure SSH key exists in project root
 ls -la ssh-key.pem
 
-# Update backend/.env.development
-EC2_HOST=your-server-ip
-EC2_USERNAME=your-username
-EC2_KEY_PATH=ssh-key.pem
+# Set correct permissions
+chmod 600 ssh-key.pem
+
+# Verify .env file has correct SSH settings (from step 1)
+grep -E "EC2_HOST|EC2_USERNAME|EC2_KEY_PATH" .env
 ```

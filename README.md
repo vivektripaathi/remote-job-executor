@@ -70,21 +70,51 @@ cd remote-job-executor
 - **Python 3.9+** for CLI usage
 - SSH key for remote server access (if executing on remote servers)
 
-### 3. SSH Configuration
+### 3. Environment Setup
+
+Set up your environment configuration:
+
+```bash
+# Navigate to backend directory
+cd backend
+
+# Copy the development template to create your active .env file
+cp .env.development .env
+
+# Edit the .env file with your actual configuration
+# Required updates:
+# - EC2_HOST=your-server-ip              # IP address of your remote server
+# - EC2_USERNAME=your-username           # SSH username (e.g., ubuntu, ec2-user)
+# - SECRET_KEY=your-secret-key-here      # Generate a strong Django secret key
+
+# Generate a Django secret key (replace the default):
+python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+
+# Example configuration:
+# EC2_HOST=192.168.1.100
+# EC2_USERNAME=ubuntu
+```
+
+### 4. SSH Configuration
 
 Ensure your SSH key is in the project root:
 
 ```bash
+# Go back to project root
+cd ..
+
 # Your SSH private key should be at:
 ./ssh-key.pem
 
-# Update backend/.env.development with your server details:
-EC2_HOST=your-server-ip
-EC2_USERNAME=your-username
-EC2_KEY_PATH=ssh-key.pem
+# Set correct permissions
+chmod 600 ssh-key.pem
 ```
 
-### 4. Start with Docker
+> **Note**: The `EC2_KEY_PATH=/app/ssh-key.pem` is already correctly set in the template for Docker usage.
+
+### 5. Start with Docker
+
+> **✅ Portable Configuration**: The docker-compose setup uses relative paths and works on any system without path modifications.
 
 **Start all services:**
 
@@ -110,7 +140,7 @@ docker-compose logs -f server
 - **Celery Worker**: Background job processing
 - **WebSocket**: `ws://localhost:8000/ws/jobs/<job-id>/`
 
-### 5. Install CLI Dependencies
+### 6. Install CLI Dependencies
 
 ```bash
 # Install CLI dependencies and test
@@ -124,7 +154,15 @@ source venv/bin/activate
 pip3 install -r requirements.txt
 ```
 
-### 6. Test the System
+### 7. Test the System
+
+**Verify environment setup:**
+
+```bash
+# Check your environment configuration
+cd backend
+grep -E "EC2_HOST|EC2_USERNAME|EC2_KEY_PATH" .env
+```
 
 **Submit a job with real-time streaming:**
 
@@ -176,4 +214,4 @@ python3 main.py cancel <job-id> --force
 
 - Verify key exists: `ls -la ssh-key.pem`
 - Check permissions: `chmod 600 ssh-key.pem`
-- Update paths in `.env.development`
+- Update paths in `backend/.env`
