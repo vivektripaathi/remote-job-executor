@@ -27,7 +27,7 @@ First, ensure the Docker backend is running:
 ```bash
 # From project root
 cd ..
-docker-compose up -d
+docker-compose up -d --build
 
 # Verify services are running
 docker-compose ps
@@ -38,6 +38,8 @@ docker-compose ps
 ```bash
 # From CLI directory
 cd cli
+python3 -m vevn venv
+source venv/bin/activate
 pip3 install -r requirements.txt
 ```
 
@@ -47,124 +49,7 @@ pip3 install -r requirements.txt
 - `requests==2.32.4` - HTTP client for API calls
 - `websockets==15.0.1` - WebSocket client for real-time streaming
 
-### 3. Configure Environment (Optional)
-
-## 🧪 Testing
-
-The CLI includes comprehensive test suites to validate functionality, race conditions, and system reliability.
-
-### Test Categories
-
-- **Unit Tests**: Individual function validation
-- **Integration Tests**: API and WebSocket integration
-- **Race Condition Tests**: Concurrent operation validation
-- **Performance Tests**: High-load stress testing
-- **System Tests**: End-to-end workflow validation
-
-### Quick Testing
-
-Install test dependencies and run all tests:
-
-```bash
-# Install test dependencies
-pip3 install -r test-requirements.txt
-
-# Run all tests
-python3 run_tests.py all
-
-# Run only race condition tests
-python3 run_tests.py race
-
-# Run quick tests (excluding slow tests)
-python3 run_tests.py quick
-```
-
-### Detailed Test Options
-
-```bash
-# Install dependencies and run tests
-python3 run_tests.py all --install-deps
-
-# Run tests in parallel
-python3 run_tests.py all --parallel
-
-# Run specific test by name
-python3 run_tests.py --specific test_concurrent_submissions
-
-# Run performance/load tests
-python3 run_tests.py performance
-
-# Generate detailed coverage report
-python3 run_tests.py --coverage-report
-```
-
-### Test Types Available
-
-| Command | Description |
-|---------|-------------|
-| `all` | Run complete test suite |
-| `race` | Race condition and concurrency tests |
-| `unit` | Unit tests for individual functions |  
-| `integration` | API and WebSocket integration tests |
-| `quick` | Fast tests only (exclude slow tests) |
-| `concurrent` | Concurrent operation tests |
-| `performance` | High-load and stress tests |
-
-### Test Coverage
-
-The test suite covers:
-
-- **Job Submission**: Command validation, priorities, timeouts
-- **Job Management**: Status tracking, cancellation, error handling
-- **Real-time Streaming**: WebSocket connections, log streaming
-- **Concurrency**: Race conditions, parallel operations
-- **Error Handling**: Network failures, invalid inputs, edge cases
-- **Data Validation**: Input sanitization, UUID validation
-- **System Integration**: End-to-end workflows
-
-### Race Condition Testing
-
-Special focus on concurrent scenarios:
-
-```bash
-# Test rapid job submissions
-pytest -v -k "rapid_fire"
-
-# Test concurrent status checks
-pytest -v -k "concurrent_status" 
-
-# Test streaming race conditions
-pytest -v -k "concurrent_streaming"
-
-# Test mixed operations
-pytest -v -k "mixed_operations"
-```
-
-### Continuous Testing
-
-Run tests during development:
-
-```bash
-# Watch mode (requires pytest-watch)
-pip3 install pytest-watch
-ptw -- --tb=short
-
-# Quick validation during development
-python3 run_tests.py quick --no-coverage
-```
-
-### Test Reports
-
-```bash
-# Generate HTML coverage report
-python3 run_tests.py --coverage-report
-open htmlcov/index.html
-
-# Run with detailed output
-pytest -v --tb=long test_cli.py test_race_conditions.py
-```
-
-### 4. Configure Environment (Optional)
+### 3. Configure Environment
 
 The CLI uses default endpoints that work with Docker setup:
 
@@ -187,25 +72,37 @@ python3 main.py submit "date" --stream
 python3 main.py submit "echo 'Hello Remote Jobs!'" --wait
 ```
 
-## ⚙️ Configuration
+## 🧪 Testing
 
-### Environment Variables (.env)
+The CLI includes two tests designed to validate race conditions and ensure system reliability. These tests simulate common concurrency issues in real-world scenarios:
+
+### Example 1 - Consider an ATM Withdrawal
+
+Imagine Ram and his friend Sham both have access to the same bank account. They attempt to withdraw ₹500 at the same time from different ATMs.
+
+If the system isn't properly synchronized:
+
+- It checks the balance and sees there’s enough money for both.
+- Both transactions go through, even though only one should.
+- This results in the account being overdrawn.
+
+#### Run this test
 
 ```bash
-# API Endpoints
-REMOTE_JOB_API_URL=http://localhost:8000/jobs
-REMOTE_JOB_WS_URL=ws://localhost:8000/ws/jobs
-
-# Production Example:
-# REMOTE_JOB_API_URL=https://api.yourcompany.com/jobs
-# REMOTE_JOB_WS_URL=wss://api.yourcompany.com/ws/jobs
+python test_atm_race_condition.py
 ```
 
-### Runtime Configuration
+### 🖨️ Example 2 – Printer Queue (File Writing Interference)
+
+Two users send print jobs simultaneously. Without proper queue management:
+
+- The printer might interleave pages from both documents.
+- This leads to mixed-up printouts and data corruption.
+
+#### Run this test
 
 ```bash
-# Override API URL for single command
-python main.py --api-url https://staging-api.com/jobs submit "test command"
+python test_file_writing_interference.py
 ```
 
 ## 🎯 Commands Overview
@@ -427,275 +324,3 @@ Updated status: Cancelled
 🛑 Job cancellation requested successfully
 Wait to confirm cancellation? [y/N]: n
 ```
-
-## 🎨 Output Features
-
-### Status Color Coding
-
-- 🟢 **Success**: Green
-- 🔴 **Failed**: Red  
-- 🟡 **Running**: Yellow
-- 🔵 **Queued**: Blue
-- 🟣 **Cancelled**: Magenta
-
-### Progress Indicators
-
-- Animated progress bars for job submission
-- Real-time status updates during streaming
-- Duration calculations for completed jobs
-- Timestamp formatting with timezone
-
-### Error Handling
-
-- Detailed error messages with context
-- HTTP status code interpretation
-- WebSocket connection error handling
-- Input validation with helpful feedback
-
-## 🔧 Advanced Usage
-
-### Environment Switching
-
-```bash
-# Development environment
-export REMOTE_JOB_API_URL=http://localhost:8000/jobs
-python main.py submit "dev-test.sh"
-
-# Staging environment  
-export REMOTE_JOB_API_URL=https://staging-api.com/jobs
-python main.py submit "staging-test.sh"
-
-# Production environment
-export REMOTE_JOB_API_URL=https://api.production.com/jobs
-python main.py submit "prod-deploy.sh" --priority High
-```
-
-### Job Workflow Examples
-
-**Database Backup Workflow:**
-
-```bash
-# Submit backup job with high priority
-JOB_ID=$(python main.py submit "backup-database.sh --full" --priority High --format json | jq -r '.id')
-
-# Monitor progress
-python main.py stream $JOB_ID
-
-# Check final results
-python main.py view $JOB_ID
-```
-
-**Long-running Process Management:**
-
-```bash
-# Start long-running job
-JOB_ID=$(python main.py submit "data-migration.py --batch-size 1000" --timeout 3600 | grep "Job ID:" | cut -d: -f2 | tr -d ' ')
-
-# Follow in another terminal
-python main.py view $JOB_ID --follow
-
-# Cancel if needed
-python main.py cancel $JOB_ID --force
-```
-
-**Batch Job Processing:**
-
-```bash
-#!/bin/bash
-# batch-submit.sh
-commands=(
-    "process-file-1.sh"
-    "process-file-2.sh"  
-    "process-file-3.sh"
-)
-
-for cmd in "${commands[@]}"; do
-    echo "Submitting: $cmd"
-    python main.py submit "$cmd" --priority Medium
-    sleep 1
-done
-```
-
-### Scripting Integration
-
-**Bash Integration:**
-
-```bash
-#!/bin/bash
-# Example: Automated deployment script
-
-echo "Starting deployment..."
-
-# Submit deployment job
-JOB_ID=$(python main.py submit "deploy.sh --env=production" \
-    --priority High --timeout 1800 --format json | jq -r '.id')
-
-if [ $? -eq 0 ]; then
-    echo "Deployment job submitted: $JOB_ID"
-    
-    # Wait for completion
-    python main.py view $JOB_ID --follow
-    
-    # Check final status
-    STATUS=$(python main.py view $JOB_ID --format json | jq -r '.status')
-    
-    if [ "$STATUS" = "Success" ]; then
-        echo "✅ Deployment completed successfully"
-        exit 0
-    else
-        echo "❌ Deployment failed"
-        exit 1
-    fi
-else
-    echo "❌ Failed to submit deployment job"
-    exit 1
-fi
-```
-
-**Python Integration:**
-
-```python
-#!/usr/bin/env python3
-# Example: Python automation script
-
-import subprocess
-import json
-import sys
-
-def submit_job(command, priority="Medium", timeout=30):
-    """Submit job and return job data"""
-    cmd = [
-        "python", "main.py", "submit", command,
-        "--priority", priority,
-        "--timeout", str(timeout),
-        "--format", "json"
-    ]
-    
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    if result.returncode == 0:
-        return json.loads(result.stdout)
-    else:
-        print(f"Error: {result.stderr}")
-        return None
-
-def wait_for_job(job_id):
-    """Wait for job completion and return final status"""
-    cmd = ["python", "main.py", "view", job_id, "--format", "json"]
-    
-    while True:
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        if result.returncode == 0:
-            job_data = json.loads(result.stdout)
-            status = job_data['status']
-            
-            if status in ['Success', 'Failed', 'Cancelled']:
-                return status
-            
-            time.sleep(2)
-        else:
-            return None
-
-# Usage example
-if __name__ == "__main__":
-    job = submit_job("backup-system.sh", priority="High", timeout=1800)
-    if job:
-        print(f"Job submitted: {job['id']}")
-        final_status = wait_for_job(job['id'])
-        print(f"Final status: {final_status}")
-```
-
-## 🛡️ Error Handling
-
-### Connection Errors
-
-```bash
-❌ Request failed: HTTPConnectionPool(host='localhost', port=8000): 
-   Max retries exceeded with url: /jobs/
-```
-
-**Solution**: Verify backend server is running and API URL is correct.
-
-### Invalid Job ID
-
-```bash
-❌ Invalid job ID format (expected UUID)
-```
-
-**Solution**: Ensure job ID is a valid UUID format.
-
-### WebSocket Errors
-
-```bash
-❌ WebSocket error: Connection refused
-```
-
-**Solution**: Check WebSocket URL and ensure Channels/Redis are running.
-
-### Timeout Errors
-
-```bash
-❌ Request failed: Read timeout
-```
-
-**Solution**: Increase timeout or check server performance.
-
-## 🔍 Troubleshooting
-
-### Debug Mode
-
-Set environment variable for verbose output:
-
-```bash
-export PYTHONPATH=.
-python -u main.py submit "test command"
-```
-
-### Network Connectivity
-
-Test API connectivity:
-
-```bash
-curl -X GET http://localhost:8000/jobs/list/
-```
-
-Test WebSocket connectivity:
-
-```bash
-# Using wscat (npm install -g wscat)
-wscat -c ws://localhost:8000/ws/jobs/test-id/
-```
-
-### Configuration Issues
-
-Verify environment file:
-
-```bash
-cat .env
-python -c "from utils import Config; c=Config(); print(f'API: {c.base_url}'); print(f'WS: {c.ws_url}')"
-```
-
-## 📊 Performance Tips
-
-### Efficient Job Management
-
-- Use `--format json` for programmatic access
-- Batch job submissions with appropriate delays
-- Use `--force` flag for automated cancellations
-- Monitor job duration to set appropriate timeouts
-
-### Resource Usage
-
-- Close streaming connections when not needed
-- Use appropriate timeout values for different job types
-- Avoid polling job status too frequently
-- Use WebSocket streaming instead of repeated API calls
-
-## 🔐 Security Considerations
-
-- Store API credentials in environment files, not scripts
-- Use HTTPS/WSS in production environments
-- Validate job IDs before processing
-- Implement proper timeout values
-- Monitor for unauthorized access patterns
-
-This CLI provides a comprehensive interface for remote job management with production-ready features and extensive customization options.
